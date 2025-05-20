@@ -73,4 +73,3 @@ The repository includes two utility scripts:
 
 - `run.sh`: Starts the FastAPI server with hot-reloading enabled
 - `freeze.sh`: Generates a requirements.txt file based on the current Python environment
-
