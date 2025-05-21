@@ -2,6 +2,8 @@ from fastapi import FastAPI, UploadFile
 from uuid import uuid4
 from .utils.file import save_to_disk
 from .db.collections.files import files_collection, FileSchema
+from .queue.queue import q
+from .queue.workers import process_file
 
 app = FastAPI()
 
@@ -32,7 +34,7 @@ async def upload_file(file: UploadFile):
     await save_to_disk(file=await file.read(), path=file_path)
 
     # push to queue
-    print("pushing file to queue")
+    q.enqueue(process_file, str(db_file.inserted_id), file_path)
 
     # Once the file is saved, updating the mongo statue
     await files_collection.update_one(
