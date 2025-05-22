@@ -1,0 +1,51 @@
+services:
+# not exposing mongo port
+  mongo: 
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongodb_data:/data/db
+
+# not exposing valkey port
+  valkey:
+    image: valkey/valkey:latest
+    volumes:
+      - valkey_data:/usr/local/etc/valkey      
+
+# building the main docker file, context is path to Dockerfile
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+
+    env_file:
+      - ./app/.env
+
+    ports:
+      - 8000:8000
+
+# running the worker
+  worker:
+    command: ["/bin/sh", "-c", "rq worker --with-scheduler --url redis://valkey:6379"]
+    build:
+      dockerfile: Dockerfile
+      context: .
+
+    env_file:
+      - ./app/.env
+
+    ports:
+      - 8001:8000      
+
+volumes:
+  mongodb_data:
+  valkey_data:
+
+
+# to run docker compose -> docker compose -f docker-compose-prod.yml up
+
+# add this cmd -> ""/bin/sh", "-c"," 
+# Error response from daemon: failed to create task for container: failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: exec: "rq worker --with-scheduler --url redis://valkey:6379": stat rq worker --with-scheduler --url redis://valkey:6379: no such file or directory: unknown
