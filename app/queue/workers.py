@@ -68,3 +68,9 @@ async def process_file(id: str, file_path: str):
     )
     
     print(completion.choices[0].message.content)
+    
+    # Update the status of the file to processed and storing the AI result
+    await files_collection.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": {"status": "processed", "result": completion.choices[0].message.content}}
+    )

@@ -1,9 +1,10 @@
-from fastapi import FastAPI, UploadFile
+from fastapi import FastAPI, UploadFile, Path
 from uuid import uuid4
 from .utils.file import save_to_disk
 from .db.collections.files import files_collection, FileSchema
 from .queue.queue import q
 from .queue.workers import process_file
+from bson import ObjectId
 
 app = FastAPI()
 
@@ -46,3 +47,15 @@ async def upload_file(file: UploadFile):
     )
 
     return {'file_id': str(db_file.inserted_id)}
+
+@app.get('/{id}')
+async def get_file_by_id(id:str = Path(..., description="The id of the file to get")):
+    db_file = await files_collection.find_one({"_id": ObjectId(id)})
+    
+    return {
+        "_id": str(db_file["_id"]),
+        "name": db_file["name"],
+        "status": db_file["status"],
+        "result": db_file["result"] if "result" in db_file else None
+    }
+    
