@@ -1,6 +1,12 @@
-# Scalable RAG System (WIP)
+# Scalable RAG System
 
 This repository contains a work-in-progress implementation of a Scalable Retrieval-Augmented Generation (RAG) system. The project is designed to handle file uploads and processing through a FastAPI backend, with MongoDB for data storage.
+
+## Architecture
+![RAG Flow](architecture.png "RAG Flow Diagram")
+
+## AWS Deployment
+![AWS Deployment](aws-deployment.png "AWS Deployment")
 
 ## DevContainer Configuration
 
@@ -78,3 +84,66 @@ The repository includes two utility scripts:
 ```bash
 rq worker --with-scheduler --url redis://valkey:6379
 ```
+
+## Production Deployment
+
+### Docker Compose Production
+
+The project includes a production-ready Docker Compose configuration (`docker-compose-prod.yml`) that sets up:
+
+- FastAPI application with Gunicorn workers
+- MongoDB with proper authentication
+- Valkey (Redis-compatible) for task queue
+- RQ worker for background task processing
+- Proper volume mounting for data persistence
+- Environment variable configuration for production settings
+
+To deploy in production:
+
+```bash
+docker-compose -f docker-compose-prod.yml up -d
+```
+
+### Why We Built It This Way
+
+This RAG system was designed with several key principles in mind:
+
+1. **Scalability**: The architecture separates concerns between web serving, background processing, and data storage, allowing each component to scale independently.
+
+2. **Reliability**: Using MongoDB for metadata storage and Valkey for task queuing ensures data persistence and reliable task processing.
+
+3. **Developer Experience**: The DevContainer setup provides a consistent development environment, making it easy for developers to get started.
+
+4. **Production Readiness**: The production Docker Compose configuration includes proper security settings, logging, and monitoring capabilities.
+
+### AWS Deployment
+
+The system can be deployed on AWS using the architecture shown in the diagram above. Key components include:
+
+1. **EC2 Instances**:
+   - Application servers running the FastAPI application
+   - Worker nodes for processing RQ tasks
+   - Auto-scaling groups for handling varying loads
+
+2. **Amazon DocumentDB**:
+   - MongoDB-compatible database service
+   - Handles metadata storage and file information
+
+3. **Amazon ElastiCache**:
+   - Redis-compatible caching layer
+   - Manages task queues and session data
+
+4. **Amazon S3**:
+   - Stores uploaded files and processed documents
+   - Provides scalable and durable storage
+
+5. **Amazon CloudFront**:
+   - CDN for serving static content
+   - Improves global access performance
+
+6. **Amazon Route 53**:
+   - DNS management
+   - Load balancing across regions
+
+The deployment is managed through infrastructure-as-code using AWS CDK, making it easy to replicate and maintain across different environments.
+
